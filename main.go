@@ -12,8 +12,8 @@ import (
 func main() {
 	fmt.Println("Server is started")
 	s := echo.New()
-
-	s.GET("/status", Handler)
+	s.Use()
+	s.GET("/status", Handler, MW)
 
 	err := s.Start(":1325")
 	if err != nil {
@@ -32,4 +32,20 @@ func Handler(c echo.Context) error {
 		return err
 	}
 	return nil
+}
+
+func MW(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+
+		val := c.Request().Header.Get("User-Role")
+		if val == "admin" {
+			log.Println("red user button detected")
+		}
+
+		err := next(c)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
 }
